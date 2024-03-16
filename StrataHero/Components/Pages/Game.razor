@@ -1,0 +1,18 @@
+﻿@page "/game"
+@inject IJSRuntime JSRuntime
+
+
+<h3>Game</h3>
+<button class="btn btn-primary" @onclick="GameLoop">Click me</button>
+
+@code {
+    public async void GameLoop()
+    {
+        await ConsoleLog("test");
+    }
+
+    async Task ConsoleLog(string message)
+    {
+        await JSRuntime.InvokeAsync<object>("console.log", message);
+    }
+}

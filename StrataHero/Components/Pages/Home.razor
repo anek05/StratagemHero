@@ -1,24 +1,29 @@
 ﻿@page "/"
-@rendermode InteractiveServer 
+@rendermode InteractiveServer
 @inject IJSRuntime JSRuntime
 
 
 <PageTitle>Home</PageTitle>
 <button @onclick="FocusInputField">Start</button>
 <input id="keyCaptureElement" @ref="keyCaptureElementRef" type="text" @onkeydown="DetectKeyPress" />
-<div id="left" style=@leftStyle>LEFT</div>
-<div id="right" style=@rightStyle>RIGHT</div>
-<div id="up" style=@upStyle>UP</div>
-<div id="down" style=@downStyle>DOWN</div>
+
+@* Kom på en bättre lösning för detta *@
+<svg class="right" style="color: @rightColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
+<svg class="left" style="transform: rotate(180deg); color: @leftColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
+<svg class="up" style="transform: rotate(270deg); color: @upColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
+<svg class="down" style="transform: rotate(90deg); color: @downColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
+
+
+
 
 
 @code {
     private ElementReference keyCaptureElementRef;
 
-    string leftStyle = "";
-    string rightStyle = "";
-    string upStyle = "";
-    string downStyle = "";
+    string leftColor = "grey";
+    string rightColor = "grey";
+    string upColor = "grey";
+    string downColor = "grey";
 
     private async void FocusInputField()
     {
@@ -28,31 +33,28 @@
     private async void DetectKeyPress(KeyboardEventArgs e)
     {
         await ConsoleLog("test2");
-        // if (e.Key == "w" || e.Key == "a" || e.Key == "s" || e.Key == "d")
-        // {
-        //     await ConsoleLog("WASD was pressed");
-        // }
 
+        //Changes color to the corresponding arrow and resets the other arrows colors
         switch (e.Key)
         {
             case "a":
-                leftStyle = "border: solid 5px red";
-                downStyle = upStyle = rightStyle = "";
+                leftColor = "white";
+                downColor = upColor = rightColor = "grey";
                 StateHasChanged();
                 break;
             case "s":
-                downStyle = "border: solid 5px red";
-                leftStyle = upStyle = rightStyle = "";
+                downColor = "white";
+                leftColor = upColor = rightColor = "grey";
                 StateHasChanged();
                 break;
             case "d":
-                rightStyle = "border: solid 5px red";
-                downStyle = upStyle = leftStyle = "";
+                rightColor = "white";
+                downColor = upColor = leftColor = "grey";
                 StateHasChanged();
                 break;
             case "w":
-                upStyle = "border: solid 5px red";
-                downStyle = leftStyle = rightStyle = "";
+                upColor = "white";
+                downColor = leftColor = rightColor = "grey";
                 StateHasChanged();
                 break;
             default:

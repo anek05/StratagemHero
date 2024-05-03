@@ -1,0 +1,31 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+<h3>ArrowSVG</h3>
+
+@code {
+    [Parameter]
+    public string Direction { get; set; }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "svg");
+        builder.AddAttribute(1, "viewbow", "0 0 100 100");
+        builder.AddAttribute(2, "class", "Arrow");
+
+        switch (Direction)
+        {
+            case "up":
+                builder.AddContent(3, "<path d=\"M50 0 L100 50 L0 50 Z\" />");
+                break;
+            case "down":
+                builder.AddContent(3, "<path d=\"M50 100 L100 50 L0 50 Z\" />");
+                break;
+            case "left":
+                builder.AddContent(3, "<path d=\"M0 50 L50 100 L50 0 Z\" />");
+                break;
+            case "right":
+                builder.AddContent(3, "<path d=\"M100 50 L50 100 L50 0 Z\" />");
+                break;
+        }
+        builder.CloseElement();
+    }
+}

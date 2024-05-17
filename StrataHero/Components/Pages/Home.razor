@@ -6,12 +6,19 @@
 <PageTitle>Home</PageTitle>
 <button @onclick="FocusInputField">Start</button>
 <input id="keyCaptureElement" @ref="keyCaptureElementRef" type="text" @onkeydown="DetectKeyPress" />
+<p>@output</p>
+<div class="container">
+        @foreach (var character in codeList[code])
+        {
+            <i class="me-2">@character</i>
+        }
+</div>
 
 @* Kom på en bättre lösning för detta *@
-<svg class="right" style="color: @rightColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
+@* <svg class="right" style="color: @rightColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
 <svg class="left" style="transform: rotate(180deg); color: @leftColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
 <svg class="up" style="transform: rotate(270deg); color: @upColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
-<svg class="down" style="transform: rotate(90deg); color: @downColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
+<svg class="down" style="transform: rotate(90deg); color: @downColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg> *@
 
 
 
@@ -20,17 +27,53 @@
 @code {
     private ElementReference keyCaptureElementRef;
 
-    string leftColor = "grey";
+    string output = string.Empty;
+    List<string[]> codeList = new List<string[]>
+        { 
+            new string[] { "W", "A", "D" },
+            new string[] { "D", "S", "A" } 
+        };
+
+    @* string leftColor = "grey";
     string rightColor = "grey";
     string upColor = "grey";
-    string downColor = "grey";
+    string downColor = "grey"; *@
 
     private async void FocusInputField()
     {
         await keyCaptureElementRef.FocusAsync();
     }
 
+    int code = 0;
+    int codeCharacter = 0;
+
     private async void DetectKeyPress(KeyboardEventArgs e)
+    {
+        
+        if(e.Key.ToUpper() == codeList[code][codeCharacter])
+        {
+            output += "CORRECT ";
+            codeCharacter++;
+            if(codeCharacter == codeList[code].Count())
+            {
+                code++;
+                codeCharacter = 0;
+                @* if(code > codeList.Count())
+                {
+                    code = 0;
+                    output = "DONE";
+                } *@
+            }
+        }
+        else
+        {
+            output = " WRONG";
+            codeCharacter = 0;
+        }
+        
+    }
+
+    @* private async void DetectKeyPress(KeyboardEventArgs e)
     {
         await ConsoleLog("test2");
 
@@ -61,7 +104,7 @@
                 await ConsoleLog("another key was pressed");
                 break;
         }
-    }
+    } *@
 
     async Task ConsoleLog(string message)
     {

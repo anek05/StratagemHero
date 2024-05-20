@@ -10,7 +10,7 @@
 <div class="container">
         @foreach (var character in codeList[code])
         {
-            <i class="me-2">@character</i>
+            <i id="@character" class="me-2">@character</i>
         }
 </div>
 
@@ -54,15 +54,15 @@
         {
             output += "CORRECT ";
             codeCharacter++;
-            if(codeCharacter == codeList[code].Count())
-            {
+            if (codeCharacter == codeList[code].Count())
+    	    {
                 code++;
                 codeCharacter = 0;
-                @* if(code > codeList.Count())
+                if (code >= codeList.Count)
                 {
-                    code = 0;
+                    code = 0;  // Reset to 0 or handle completion as needed
                     output = "DONE";
-                } *@
+                }
             }
         }
         else

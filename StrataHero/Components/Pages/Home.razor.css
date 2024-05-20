@@ -1,4 +1,8 @@
-﻿.left {
-    /*transform: rotate(180deg);*/
-    color: "#1234";
+﻿.correct {
+    color: green;
 }
+
+.incorrect {
+    color: red;
+}
+

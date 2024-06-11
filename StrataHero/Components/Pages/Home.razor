@@ -7,15 +7,17 @@
 <button @onclick="FocusInputField">Start</button>
 <input id="keyCaptureElement" @ref="keyCaptureElementRef" type="text" @onkeydown="DetectKeyPress" />
 <div class="container">
-    @* @for (int i = 0; i < codeList[codeIndex].Length; i++)
+    @* @for (int i = 0; i < codeList[index].Length; i++)
     {
-        var character = codeList[codeIndex][i];
+        var character = codeList[index][i];
         <i class="me-2 @(GetCssClass(i))">@character</i>
     } *@
-    @for (int i = 0; i < StratagemList.Count; i++)
+    @if(Stratagem is not null)
     {
-        <p>@StratagemList[i].Name</p>
-        <p>@StratagemList[i].Sequence</p>
+        <p>@Stratagem.Name</p>
+        @foreach(char seq in Stratagem.Sequence.ToCharArray()){
+            <i>@seq</i>
+        }
     }
 </div>
 <p>Score: @score</p>
@@ -28,9 +30,10 @@
     private ElementReference keyCaptureElementRef;
 
     private List<Stratagem>? StratagemList;
+    private Stratagem? Stratagem = new();
 
     int score = 0;
-    int codeIndex = 0;
+    int index = 0;
     int codeCharacterIndex = 0;
     Dictionary<int, bool> correctStatus = new Dictionary<int, bool>();
 
@@ -51,31 +54,40 @@
     protected override void OnInitialized()
     {
         StratagemList = Client.GetStratagems();
+        GetStratagem(index);
     }
 
+    //Game starts
     private async Task FocusInputField()
     {
         await keyCaptureElementRef.FocusAsync();
         await StartTimer();
     }
 
+    private void GetStratagem(int index)
+    {
+        Stratagem.Name = StratagemList[index].Name;
+        Stratagem.Sequence = StratagemList[index].Sequence;
+        Stratagem.Image = StratagemList[index].Image;
+    }
+
 
     private async Task DetectKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key.ToUpper() == codeList[codeIndex][codeCharacterIndex])
+        if (e.Key.ToUpper() == codeList[index][codeCharacterIndex])
         {
             correctStatus[codeCharacterIndex] = true;
             codeCharacterIndex++;
-            if (codeCharacterIndex == codeList[codeIndex].Length)
+            if (codeCharacterIndex == codeList[index].Length)
             {
-                codeIndex++;
+                index++;
                 codeCharacterIndex = 0;
                 correctStatus.Clear();
                 score += 10;
                 timeLeft += 5;
-                if (codeIndex >= codeList.Count)
+                if (index >= codeList.Count)
                 {
-                    codeIndex = 0;
+                    index = 0;
                 }
             }
         }

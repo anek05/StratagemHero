@@ -6,4 +6,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Remove="data\stratagemCodes.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="data\stratagemCodes.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\StratagemIcons\" />
+  </ItemGroup>
+
 </Project>

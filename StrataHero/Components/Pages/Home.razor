@@ -1,113 +1,145 @@
 ﻿@page "/"
 @rendermode InteractiveServer
 @inject IJSRuntime JSRuntime
-
+@inject StratagemClient Client
 
 <PageTitle>Home</PageTitle>
 <button @onclick="FocusInputField">Start</button>
 <input id="keyCaptureElement" @ref="keyCaptureElementRef" type="text" @onkeydown="DetectKeyPress" />
-<p>@output</p>
 <div class="container">
-        @foreach (var character in codeList[code])
-        {
-            <i id="@character" class="me-2">@character</i>
-        }
+    @* @for (int i = 0; i < codeList[codeIndex].Length; i++)
+    {
+        var character = codeList[codeIndex][i];
+        <i class="me-2 @(GetCssClass(i))">@character</i>
+    } *@
+    @for (int i = 0; i < StratagemList.Count; i++)
+    {
+        <p>@StratagemList[i].Name</p>
+        <p>@StratagemList[i].Sequence</p>
+    }
 </div>
+<p>Score: @score</p>
+<div class="progress">
+  <div class="progress-bar" role="progressbar" style="width:@progress" aria-valuenow="@timeLeft" aria-valuemin="0" aria-valuemax="100">@timeLeft</div>
+</div
 
-@* Kom på en bättre lösning för detta *@
-@* <svg class="right" style="color: @rightColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
-<svg class="left" style="transform: rotate(180deg); color: @leftColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
-<svg class="up" style="transform: rotate(270deg); color: @upColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg>
-<svg class="down" style="transform: rotate(90deg); color: @downColor;" xmlns="http://www.w3.org/2000/svg" width="19.99" height="18"><path fill="currentColor" d="M10.029 5H0v7.967h10.029V18l9.961-9.048L10.029 0v5z" /></svg> *@
-
-
-
-
-
+@progress
 @code {
     private ElementReference keyCaptureElementRef;
 
-    string output = string.Empty;
+    private List<Stratagem>? StratagemList;
+
+    int score = 0;
+    int codeIndex = 0;
+    int codeCharacterIndex = 0;
+    Dictionary<int, bool> correctStatus = new Dictionary<int, bool>();
+
     List<string[]> codeList = new List<string[]>
         { 
             new string[] { "W", "A", "D" },
             new string[] { "D", "S", "A" } 
         };
 
-    @* string leftColor = "grey";
-    string rightColor = "grey";
-    string upColor = "grey";
-    string downColor = "grey"; *@
+    //Timer variables
+    private int timeLeft = 10; // Total countdown time in seconds
+    private int totalTime = 10;
+    private string progress = "100%";
+    private bool isRunning = false;
+    private System.Timers.Timer? timer;
+    //**********************************//
 
-    private async void FocusInputField()
+    protected override void OnInitialized()
     {
-        await keyCaptureElementRef.FocusAsync();
+        StratagemList = Client.GetStratagems();
     }
 
-    int code = 0;
-    int codeCharacter = 0;
-
-    private async void DetectKeyPress(KeyboardEventArgs e)
+    private async Task FocusInputField()
     {
-        
-        if(e.Key.ToUpper() == codeList[code][codeCharacter])
+        await keyCaptureElementRef.FocusAsync();
+        await StartTimer();
+    }
+
+
+    private async Task DetectKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key.ToUpper() == codeList[codeIndex][codeCharacterIndex])
         {
-            output += "CORRECT ";
-            codeCharacter++;
-            if (codeCharacter == codeList[code].Count())
-    	    {
-                code++;
-                codeCharacter = 0;
-                if (code >= codeList.Count)
+            correctStatus[codeCharacterIndex] = true;
+            codeCharacterIndex++;
+            if (codeCharacterIndex == codeList[codeIndex].Length)
+            {
+                codeIndex++;
+                codeCharacterIndex = 0;
+                correctStatus.Clear();
+                score += 10;
+                timeLeft += 5;
+                if (codeIndex >= codeList.Count)
                 {
-                    code = 0;  // Reset to 0 or handle completion as needed
-                    output = "DONE";
+                    codeIndex = 0;
                 }
             }
         }
         else
         {
-            output = " WRONG";
-            codeCharacter = 0;
+            correctStatus[codeCharacterIndex] = false;
+            codeCharacterIndex = 0;
         }
-        
+        StateHasChanged();
     }
 
-    @* private async void DetectKeyPress(KeyboardEventArgs e)
+    private string GetCssClass(int index)
     {
-        await ConsoleLog("test2");
-
-        //Changes color to the corresponding arrow and resets the other arrows colors
-        switch (e.Key)
+        if (correctStatus.ContainsKey(index))
         {
-            case "a":
-                leftColor = "white";
-                downColor = upColor = rightColor = "grey";
-                StateHasChanged();
-                break;
-            case "s":
-                downColor = "white";
-                leftColor = upColor = rightColor = "grey";
-                StateHasChanged();
-                break;
-            case "d":
-                rightColor = "white";
-                downColor = upColor = leftColor = "grey";
-                StateHasChanged();
-                break;
-            case "w":
-                upColor = "white";
-                downColor = leftColor = rightColor = "grey";
-                StateHasChanged();
-                break;
-            default:
-                await ConsoleLog("another key was pressed");
-                break;
+            return correctStatus[index] ? "correct" : "incorrect";
         }
-    } *@
-
-    async Task ConsoleLog(string message)
-    {
-        await JSRuntime.InvokeAsync<object>("console.log", message);
+        return string.Empty;
     }
+
+    //Timer*******************************
+
+    private async Task StartTimer()
+    {
+        isRunning = true;
+        timeLeft = totalTime;
+        UpdateProgressBar();
+
+        timer = new System.Timers.Timer(1000); // Set the timer interval to 1 second
+        timer.Elapsed += OnTimerElapsed;
+        timer.AutoReset = true;
+        timer.Enabled = true;
+    }
+
+    private void OnTimerElapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    {
+        if (timeLeft > 0)
+        {
+            timeLeft--;
+            UpdateProgressBar();
+            InvokeAsync(StateHasChanged); // Refresh UI
+        }
+        else
+        {
+            timer?.Stop();
+            isRunning = false;
+            InvokeAsync(StateHasChanged); // Refresh UI
+        }
+    }
+
+    private void UpdateProgressBar()
+    {
+        double newProgress = ((double)timeLeft / totalTime * 100);
+        if (newProgress > 100)
+        {
+            newProgress = 100;
+            progress = (newProgress).ToString("F0") + "%";
+        }
+        progress = (newProgress).ToString("F0") + "%";
+    }
+
+    public void Dispose()
+    {
+        timer?.Dispose();
+    }
+    //Timer end*******************************
 }

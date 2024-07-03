@@ -1,8 +1,8 @@
-﻿.correct {
-    background-color: green;
+﻿.stratagem-image{
+    border:5px #fee800 solid;
 }
 
-.incorrect {
-    background-color: red;
+.stratagem-name{
+    background-color: #fee800;
 }
 

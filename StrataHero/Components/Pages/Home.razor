@@ -7,18 +7,36 @@
 <button @onclick="FocusInputField">Start</button>
 <input id="keyCaptureElement" @ref="keyCaptureElementRef" type="text" @onkeydown="DetectKeyPress" />
 <div class="container">
-    @* @for (int i = 0; i < codeList[index].Length; i++)
+    @* @for (int i = 0; i < codeList[stratagemIndex].Length; i++)
     {
-        var character = codeList[index][i];
+        var character = codeList[stratagemIndex][i];
         <i class="me-2 @(GetCssClass(i))">@character</i>
     } *@
     @if(Stratagem is not null)
     {
-        <p>@Stratagem.Name</p>
-        @foreach(char seq in Stratagem.Sequence.ToCharArray()){
-            <i>@seq</i>
-        }
+        <div class="container">
+            <div class="">
+                <img src="StratagemIcons/@Stratagem.Image" alt="@Stratagem.Name" class="stratagem-image px-2 col" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+1].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+2].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+3].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+4].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+5].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
+
+            </div>
+            <p class="d-block text-center text-dark fw-semibold" style="background-color: #fee800;">@Stratagem.Name</p>
+            @* @foreach(char seq in Stratagem.Sequence.ToCharArray())
+            {
+            <img src="Arrows/@(seq).png" class="arrow" alt="@Stratagem.Name" width="24" height="24"/>
+            } *@
+            @for(int i = 0; i < Stratagem.Sequence.ToCharArray().Length; i++)
+            {
+                <img src="Arrows/@(Stratagem.Sequence.ToCharArray()[i]).png" id="arrow-@i" alt="@Stratagem.Name" width="24" height="24"/>
+            }
+        </div>
+        
     }
+
 </div>
 <p>Score: @score</p>
 <div class="progress">
@@ -33,15 +51,12 @@
     private Stratagem? Stratagem = new();
 
     int score = 0;
-    int index = 0;
-    int codeCharacterIndex = 0;
-    Dictionary<int, bool> correctStatus = new Dictionary<int, bool>();
+    int stratagemIndex = 0;
+    int charIndex = 0;
 
-    List<string[]> codeList = new List<string[]>
-        { 
-            new string[] { "W", "A", "D" },
-            new string[] { "D", "S", "A" } 
-        };
+    string arrowStyle = String.Empty;
+    bool isCorrect = false;
+    Dictionary<int, bool> correctStatus = new Dictionary<int, bool>();
 
     //Timer variables
     private int timeLeft = 10; // Total countdown time in seconds
@@ -54,7 +69,7 @@
     protected override void OnInitialized()
     {
         StratagemList = Client.GetStratagems();
-        GetStratagem(index);
+        GetStratagem(stratagemIndex);
     }
 
     //Game starts
@@ -64,30 +79,47 @@
         await StartTimer();
     }
 
-    private void GetStratagem(int index)
+    private void GetStratagem(int stratagemIndex)
     {
-        Stratagem.Name = StratagemList[index].Name;
-        Stratagem.Sequence = StratagemList[index].Sequence;
-        Stratagem.Image = StratagemList[index].Image;
+        Stratagem.Name = StratagemList[stratagemIndex].Name;
+        Stratagem.Sequence = StratagemList[stratagemIndex].Sequence;
+        Stratagem.Image = StratagemList[stratagemIndex].Image;
     }
 
 
     private async Task DetectKeyPress(KeyboardEventArgs e)
     {
-        if (e.Key.ToUpper() == codeList[index][codeCharacterIndex])
+        var sequenceArray = Stratagem.Sequence.ToCharArray();
+        if(InputMapper(e.Key.ToUpper()) == sequenceArray[charIndex])
+        {
+            charIndex++;
+            arrowStyle = "filter: grayscale(1);";
+            if(charIndex == sequenceArray.Length)
+            {
+                charIndex = 0;
+                stratagemIndex++;
+                score += 10;
+                timeLeft += 5;
+                GetStratagem(stratagemIndex);
+            }
+        }
+        else charIndex = 0;
+
+
+        @* if (e.Key.ToUpper() == codeList[stratagemIndex][codeCharacterIndex])
         {
             correctStatus[codeCharacterIndex] = true;
             codeCharacterIndex++;
-            if (codeCharacterIndex == codeList[index].Length)
+            if (codeCharacterIndex == codeList[stratagemIndex].Length)
             {
-                index++;
+                stratagemIndex++;
                 codeCharacterIndex = 0;
                 correctStatus.Clear();
                 score += 10;
                 timeLeft += 5;
-                if (index >= codeList.Count)
+                if (stratagemIndex >= codeList.Count)
                 {
-                    index = 0;
+                    stratagemIndex = 0;
                 }
             }
         }
@@ -95,15 +127,36 @@
         {
             correctStatus[codeCharacterIndex] = false;
             codeCharacterIndex = 0;
-        }
-        StateHasChanged();
+        } *@
+        StateHasChanged(); 
     }
 
-    private string GetCssClass(int index)
+    ///<summary>
+    /// Maps the user input so it maps the stratagem sequence characters.
+    //  'E' stands for "Error"
+    ///<summary>
+    private char InputMapper(string input)
     {
-        if (correctStatus.ContainsKey(index))
+        switch(input)
         {
-            return correctStatus[index] ? "correct" : "incorrect";
+            case "W":
+                return 'U';
+            case "S":
+                return 'D';
+            case "A":
+                return 'L';
+            case "D":
+                return 'R';
+            default:
+                return 'E';
+        }
+    } 
+
+    private string GetCssClass(int stratagemIndex)
+    {
+        if (correctStatus.ContainsKey(stratagemIndex))
+        {
+            return correctStatus[stratagemIndex] ? "correct" : "incorrect";
         }
         return string.Empty;
     }

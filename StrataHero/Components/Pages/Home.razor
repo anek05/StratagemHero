@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject IJSRuntime JSRuntime
 @inject StratagemClient Client
+@using static StrataHero.Tools.Helpers;
 
 <PageTitle>Home</PageTitle>
 <button @onclick="FocusInputField">Start</button>
@@ -76,6 +77,7 @@
     private async Task FocusInputField()
     {
         await keyCaptureElementRef.FocusAsync();
+        StratagemList.Shuffle();
         await StartTimer();
     }
 

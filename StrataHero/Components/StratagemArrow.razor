@@ -1,0 +1,30 @@
+@inject IJSRuntime JSRuntime;
+
+<img src="Arrows/@(ArrowType).png"
+        id="@Id" 
+        alt="testtest @Alt" 
+        width="36" 
+        height="36" 
+        class="@CurrentClass"/>
+
+@code {
+
+    [Parameter] public char ArrowType { get; set; }  //U,D,R,L 
+    [Parameter] public string Alt { get; set; }
+    [Parameter] public int Index { get; set; }
+
+    private string Id => $"arrow-{Index}";
+    private string CurrentClass = "stratagem-arrow";
+
+// Method to dynamically change the CSS class of the arrow - EJ TESTAT ÄN
+    public async Task SetClass(string newClass)
+    {
+        CurrentClass = $"stratagem-arrow {newClass}";
+        // Use JavaScript interop to immediately update the class in the DOM
+        // This ensures the change is visible even if Blazor hasn't re-rendered yet
+        await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('{Id}').className = '{CurrentClass}'");
+        StateHasChanged();
+    }
+    
+    
+}

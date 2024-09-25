@@ -1,8 +1,40 @@
-﻿.stratagem-image{
+﻿.contents{
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    border-top: whitesmoke 4px solid;
+    border-bottom: whitesmoke 4px solid;
+    width: 100%;
+
+}
+
+.game{
+    padding-top: 10%;
+    padding-bottom: 10%;
+    width: 50%;
+    margin:auto;
+}
+
+.iconrow{
+    display: flex;
+    justify-content: space-between;
+}
+
+.stratagem-image{
     border:5px #fee800 solid;
 }
 
 .stratagem-name{
     background-color: #fee800;
 }
+
+.sequence{
+    display: flex;
+    margin:auto;
+    justify-content: center;
+}
+
+
 

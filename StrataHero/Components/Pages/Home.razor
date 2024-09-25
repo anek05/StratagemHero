@@ -7,49 +7,52 @@
 <PageTitle>Home</PageTitle>
 <button @onclick="FocusInputField">Start</button>
 <input id="keyCaptureElement" @ref="keyCaptureElementRef" type="text" @onkeydown="DetectKeyPress" />
-<div class="container">
+<div class="contents">
     @* @for (int i = 0; i < codeList[stratagemIndex].Length; i++)
     {
         var character = codeList[stratagemIndex][i];
         <i class="me-2 @(GetCssClass(i))">@character</i>
     } *@
+    <div class="game">
     @if(Stratagem is not null)
     {
-        <div class="container">
-            <div class="">
-                <img src="StratagemIcons/@Stratagem.Image" alt="@Stratagem.Name" class="stratagem-image px-2 col" width="128" height="128" />
-                <img src="StratagemIcons/@StratagemList[stratagemIndex+1].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
-                <img src="StratagemIcons/@StratagemList[stratagemIndex+2].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
-                <img src="StratagemIcons/@StratagemList[stratagemIndex+3].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
-                <img src="StratagemIcons/@StratagemList[stratagemIndex+4].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
-                <img src="StratagemIcons/@StratagemList[stratagemIndex+5].Image" alt="@Stratagem.Name" class="px-2 col" width="128" height="128" />
-
+        <div class="">            
+            <div class="iconrow">
+                <img src="StratagemIcons/@Stratagem.Image" alt="@Stratagem.Name" class="stratagem-image " width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+1].Image" alt="@Stratagem.Name" class="" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+2].Image" alt="@Stratagem.Name" class="" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+3].Image" alt="@Stratagem.Name" class="" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+4].Image" alt="@Stratagem.Name" class="" width="128" height="128" />
+                <img src="StratagemIcons/@StratagemList[stratagemIndex+5].Image" alt="@Stratagem.Name" class="" width="128" height="128" />
             </div>
-            <p class="d-block text-center text-dark fw-semibold" style="background-color: #fee800;">@Stratagem.Name</p>
-            @* @foreach(char seq in Stratagem.Sequence.ToCharArray())
-            {
-            <img src="Arrows/@(seq).png" class="arrow" alt="@Stratagem.Name" width="24" height="24"/>
-            } *@
+            <p class="text-center text-dark fw-semibold" style="background-color: #fee800;">@Stratagem.Name</p>
+            <div class="sequence">
             @for(int i = 0; i < Stratagem.Sequence.ToCharArray().Length; i++)
             {
-                <img src="Arrows/@(Stratagem.Sequence.ToCharArray()[i]).png" id="arrow-@i" alt="@Stratagem.Name" width="24" height="24"/>
+                @* <img src="Arrows/@(Stratagem.Sequence.ToCharArray()[i]).png" id="arrow-@i" alt="@Stratagem.Name" width="24" height="24"/> *@
+                <StratagemArrow ArrowType="@Stratagem.Sequence.ToCharArray()[i]"
+                    Alt="@Stratagem.Name"
+                    Index="@i"
+                     />
             }
+            </div>
         </div>
         
     }
 
+        <p>Score: @score</p>
+        <div class="progress">
+            <div class="progress-bar" role="progressbar" style="width:@progress" aria-valuenow="@timeLeft" aria-valuemin="0" aria-valuemax="100">@timeLeft</div>
+        </div
+    </div>
 </div>
-<p>Score: @score</p>
-<div class="progress">
-  <div class="progress-bar" role="progressbar" style="width:@progress" aria-valuenow="@timeLeft" aria-valuemin="0" aria-valuemax="100">@timeLeft</div>
-</div
 
-@progress
 @code {
     private ElementReference keyCaptureElementRef;
 
     private List<Stratagem>? StratagemList;
     private Stratagem? Stratagem = new();
+    private List<StratagemArrow> arrowComponents = new List<StratagemArrow>();
 
     int score = 0;
     int stratagemIndex = 0;
@@ -94,8 +97,9 @@
         var sequenceArray = Stratagem.Sequence.ToCharArray();
         if(InputMapper(e.Key.ToUpper()) == sequenceArray[charIndex])
         {
+            await ChangeArrowClass(charIndex, "highlighted");
             charIndex++;
-            arrowStyle = "filter: grayscale(1);";
+            @*arrowStyle = "filter: grayscale(1);";*@
             if(charIndex == sequenceArray.Length)
             {
                 charIndex = 0;
@@ -103,33 +107,14 @@
                 score += 10;
                 timeLeft += 5;
                 GetStratagem(stratagemIndex);
-            }
-        }
-        else charIndex = 0;
-
-
-        @* if (e.Key.ToUpper() == codeList[stratagemIndex][codeCharacterIndex])
-        {
-            correctStatus[codeCharacterIndex] = true;
-            codeCharacterIndex++;
-            if (codeCharacterIndex == codeList[stratagemIndex].Length)
-            {
-                stratagemIndex++;
-                codeCharacterIndex = 0;
-                correctStatus.Clear();
-                score += 10;
-                timeLeft += 5;
-                if (stratagemIndex >= codeList.Count)
-                {
-                    stratagemIndex = 0;
-                }
+                await ResetArrowClass(Stratagem.Sequence.ToCharArray()); //new stratagem so can't use sequenceArray, fix this
             }
         }
         else
         {
-            correctStatus[codeCharacterIndex] = false;
-            codeCharacterIndex = 0;
-        } *@
+            charIndex = 0;
+            await ResetArrowClass(sequenceArray);
+        } 
         StateHasChanged(); 
     }
 
@@ -154,13 +139,27 @@
         }
     } 
 
-    private string GetCssClass(int stratagemIndex)
+    // Method to change a specific arrow's class
+    public async Task ChangeArrowClass(int index, string newClass)
     {
-        if (correctStatus.ContainsKey(stratagemIndex))
+        /*if (index >= 0)
         {
-            return correctStatus[stratagemIndex] ? "correct" : "incorrect";
+            await arrowComponents[index].SetClass(newClass);
+        }*/
+        string className = $"stratagem-arrow {newClass}";
+        // Use JavaScript interop to immediately update the class in the DOM
+        // This ensures the change is visible even if Blazor hasn't re-rendered yet
+        await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('arrow-{index}').className = '{className}'");
+        StateHasChanged();
+    }
+
+    public async Task ResetArrowClass(char[] sequence)
+    {
+        for(int i = 0; i < sequence.Length; i++)
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('arrow-{i}').className = 'stratagem-arrow'");
+            StateHasChanged();
         }
-        return string.Empty;
     }
 
     //Timer*******************************

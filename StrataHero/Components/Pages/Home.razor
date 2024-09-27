@@ -97,7 +97,7 @@
         var sequenceArray = Stratagem.Sequence.ToCharArray();
         if(InputMapper(e.Key.ToUpper()) == sequenceArray[charIndex])
         {
-            await ChangeArrowClass(charIndex, "highlighted");
+            await ChangeArrowClass(charIndex, "active");
             charIndex++;
             @*arrowStyle = "filter: grayscale(1);";*@
             if(charIndex == sequenceArray.Length)
@@ -157,7 +157,7 @@
     {
         for(int i = 0; i < sequence.Length; i++)
         {
-            await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('arrow-{i}').className = 'stratagem-arrow'");
+            await JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('arrow-{i}').className = 'stratagem-arrow inactive'");
             StateHasChanged();
         }
     }
